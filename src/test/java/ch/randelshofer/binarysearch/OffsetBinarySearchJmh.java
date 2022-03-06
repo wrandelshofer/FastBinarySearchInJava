@@ -1,3 +1,8 @@
+/*
+ * @(#)OffsetBinarySearchJmh.java
+ * Copyright © 2022. Werner Randelshofer, Switzerland. MIT License.
+ */
+
 package ch.randelshofer.binarysearch;
 
 import org.openjdk.jmh.annotations.Benchmark;

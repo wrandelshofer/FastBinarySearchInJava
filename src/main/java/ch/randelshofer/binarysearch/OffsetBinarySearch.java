@@ -1,3 +1,8 @@
+/*
+ * @(#)OffsetBinarySearch.java
+ * Copyright © 2022. Werner Randelshofer, Switzerland. MIT License.
+ */
+
 package ch.randelshofer.binarysearch;
 
 import java.util.Arrays;
@@ -12,7 +17,8 @@ import java.util.Arrays;
  *         Search in O(1) with Wide Applicability to Arrays of Floating Point
  *         Numbers."
  *     </dt>
- *     <dd><a href="https://github.com/fabiocannizzo/FastBinarySearch">github</a>
+ *     <dd><a href="https://arxiv.org/abs/1506.08620">arxiv</a>
+ *     <a href="https://github.com/fabiocannizzo/FastBinarySearch">github</a>,
  *     MIT License</dd>
  * </dl>
  */
@@ -32,8 +38,8 @@ public class OffsetBinarySearch {
      * @param fromIndex from inclusive
      * @param toIndex   to exclusive
      * @param key       the key
-     * @return index of key in a, if the key is present in a.
-     * ~(insertionPoint) if they key is absent in a.
+     * @return index of key in {@code a}, if the key is present in {@code a}.
+     * {@code ~(insertionPoint)} if they key is absent in {@code a}.
      */
     public static int offsetBinarySearch(int[] a, int fromIndex, int toIndex,
                                          int key) {
