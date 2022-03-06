@@ -26,8 +26,8 @@ import java.util.concurrent.TimeUnit;
  * Benchmark                                      Mode  Cnt   Score   Error  Units
  * OffsetBinarySearchJmh.mArraysBinarySearchHit   avgt   25  42.394 ± 0.166  ns/op
  * OffsetBinarySearchJmh.mArraysBinarySearchMiss  avgt   25  41.987 ± 1.637  ns/op
- * OffsetBinarySearchJmh.mOffsetBinarySearchHit   avgt   25  16.697 ± 0.057  ns/op
- * OffsetBinarySearchJmh.mOffsetBinarySearchMiss  avgt   25  16.669 ± 0.029  ns/op
+ * OffsetBinarySearchJmh.mOffsetBinarySearchHit   avgt   25  13.906 ± 0.013  ns/op
+ * OffsetBinarySearchJmh.mOffsetBinarySearchMiss  avgt   25  13.890 ± 0.015  ns/op
  * </pre>
  */
 //@Measurement(iterations = 2)
@@ -77,7 +77,7 @@ public class OffsetBinarySearchJmh {
         return OffsetBinarySearch.offsetBinarySearch(a, 0, a.length, hitKeys[index]);
     }
 
-    @Benchmark
+    //@Benchmark
     public int mArraysBinarySearchHit() {
         index = (index + 1) % hitKeys.length;
         return Arrays.binarySearch(a, 0, a.length, hitKeys[index]);
@@ -89,7 +89,7 @@ public class OffsetBinarySearchJmh {
         return OffsetBinarySearch.offsetBinarySearch(a, 0, a.length, missKeys[index]);
     }
 
-    @Benchmark
+    // @Benchmark
     public int mArraysBinarySearchMiss() {
         index = (index + 1) % missKeys.length;
         return Arrays.binarySearch(a, 0, a.length, missKeys[index]);

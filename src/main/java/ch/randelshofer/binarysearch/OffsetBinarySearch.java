@@ -65,6 +65,7 @@ public class OffsetBinarySearch {
         }
 
         int low = fromIndex + i;
-        return a[low] == key ? low : (a[low] < key ? -(low + 2) : ~low);
+        int value = a[low];
+        return value == key ? low : (value < key ? ~low - 1 : ~low);
     }
 }
