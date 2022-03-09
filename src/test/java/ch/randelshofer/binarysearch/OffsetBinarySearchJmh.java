@@ -22,12 +22,22 @@ import java.util.concurrent.TimeUnit;
  * # VM version: JDK 17, OpenJDK 64-Bit Server VM, 17+35-2724
  * # Intel(R) Core(TM) i7-8700B CPU @ 3.20GHz
  *
+ * Benchmark                                      Mode  Cnt   Score   Error  Units
+ * OffsetBinarySearchJmh.mArraysBinarySearchHit   avgt   25  32.194 ± 1.065  ns/op
+ * OffsetBinarySearchJmh.mArraysBinarySearchMiss  avgt   25  31.425 ± 1.161  ns/op
+ * OffsetBinarySearchJmh.mOffsetBinarySearchHit   avgt   25  13.686 ± 0.019  ns/op
+ * OffsetBinarySearchJmh.mOffsetBinarySearchMiss  avgt   25  13.682 ± 0.015  ns/op
+ * </pre>
+ * <pre>
+ * # JMH version: 1.34
+ * # VM version: JDK 1.8.0_261, Java HotSpot(TM) 64-Bit Server VM, 25.261-b12
+ * # Intel(R) Core(TM) i7-8700B CPU @ 3.20GHz
  *
  * Benchmark                                      Mode  Cnt   Score   Error  Units
- * OffsetBinarySearchJmh.mArraysBinarySearchHit   avgt   25  42.394 ± 0.166  ns/op
- * OffsetBinarySearchJmh.mArraysBinarySearchMiss  avgt   25  41.987 ± 1.637  ns/op
- * OffsetBinarySearchJmh.mOffsetBinarySearchHit   avgt   25  13.906 ± 0.013  ns/op
- * OffsetBinarySearchJmh.mOffsetBinarySearchMiss  avgt   25  13.890 ± 0.015  ns/op
+ * OffsetBinarySearchJmh.mArraysBinarySearchHit   avgt   25  34.583 ± 1.330  ns/op
+ * OffsetBinarySearchJmh.mArraysBinarySearchMiss  avgt   25  36.206 ± 0.412  ns/op
+ * OffsetBinarySearchJmh.mOffsetBinarySearchHit   avgt   25  16.229 ± 0.057  ns/op
+ * OffsetBinarySearchJmh.mOffsetBinarySearchMiss  avgt   25  16.272 ± 0.065  ns/op
  * </pre>
  */
 //@Measurement(iterations = 2)
@@ -77,7 +87,7 @@ public class OffsetBinarySearchJmh {
         return OffsetBinarySearch.offsetBinarySearch(a, 0, a.length, hitKeys[index]);
     }
 
-    //@Benchmark
+    @Benchmark
     public int mArraysBinarySearchHit() {
         index = (index + 1) % hitKeys.length;
         return Arrays.binarySearch(a, 0, a.length, hitKeys[index]);
@@ -89,7 +99,7 @@ public class OffsetBinarySearchJmh {
         return OffsetBinarySearch.offsetBinarySearch(a, 0, a.length, missKeys[index]);
     }
 
-    // @Benchmark
+    @Benchmark
     public int mArraysBinarySearchMiss() {
         index = (index + 1) % missKeys.length;
         return Arrays.binarySearch(a, 0, a.length, missKeys[index]);

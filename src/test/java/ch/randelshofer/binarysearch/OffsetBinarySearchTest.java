@@ -22,7 +22,7 @@ import static org.junit.jupiter.api.DynamicTest.dynamicTest;
 class OffsetBinarySearchTest {
     @TestFactory
     public List<DynamicTest> testsWithDistinctValues() {
-        return List.of(
+        return Arrays.asList(
                 dynamicTest("1", () -> testDistinctValues(new int[]{1, 2, 3, 4}, 0, 4)),
                 dynamicTest("2", () -> testDistinctValues(new int[]{1, 3, 5, 7}, 0, 4)),
                 dynamicTest("3", () -> testDistinctValues(new int[]{2, 4, 8, 10}, 0, 4)),
@@ -39,7 +39,7 @@ class OffsetBinarySearchTest {
 
     @TestFactory
     public List<DynamicTest> testsWithDuplicates() {
-        return List.of(
+        return Arrays.asList(
                 dynamicTest("1", () -> testDuplicateValues(new int[]{1, 2, 2, 3, 3, 4, 4, 4, 4}, 0, 9)),
                 dynamicTest("2", () -> testDuplicateValues(new int[]{1, 1, 2, 2, 3, 4, 4, 5, 5}, 0, 9)),
                 dynamicTest("3", () -> testDuplicateValues(new int[]{8, 8, 1, 1, 2, 2, 3, 4, 4, 5, 5, -1, -1}, 2, 11))
