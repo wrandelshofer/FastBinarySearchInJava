@@ -38,6 +38,23 @@ class OffsetBinarySearchTest {
     }
 
     @TestFactory
+    public List<DynamicTest> testsSearchAll() {
+        return Arrays.asList(
+                dynamicTest("1", () -> testAllValues(new int[]{1, 2, 3, 4}, 0, 4)),
+                dynamicTest("2", () -> testAllValues(new int[]{1, 3, 5, 7}, 0, 4)),
+                dynamicTest("3", () -> testAllValues(new int[]{2, 4, 8, 10}, 0, 4)),
+                dynamicTest("4", () -> testAllValues(new int[]{1, 2, 3, 4, 5}, 0, 5)),
+                dynamicTest("5", () -> testAllValues(new int[]{1, 3, 5, 7, 9}, 0, 5)),
+                dynamicTest("6", () -> testAllValues(new int[]{2, 4, 8, 10, 12}, 0, 5)),
+                dynamicTest("7", () -> testAllValues(new int[]{1, 2, 3, 40, 50}, 0, 5)),
+                dynamicTest("8", () -> testAllValues(new int[]{0, 1, 2, 3, 40, 50, 60}, 2, 5)),
+                dynamicTest("9 empty!", () -> testAllValues(new int[]{0, 1, 2, 3, 40, 50, 60}, 2, 2)),
+                dynamicTest("10", () -> testAllValues(rndNoDuplicates(15), 0, 15)),
+                dynamicTest("11 large", () -> testAllValues(rndNoDuplicates(1023), 0, 1023))
+        );
+    }
+
+    @TestFactory
     public List<DynamicTest> testsWithDuplicates() {
         return Arrays.asList(
                 dynamicTest("1", () -> testDuplicateValues(new int[]{1, 2, 2, 3, 3, 4, 4, 4, 4}, 0, 9)),
@@ -66,10 +83,20 @@ class OffsetBinarySearchTest {
                 if (!distinct.add(key)) {
                     continue;
                 }
-                int actual = OffsetBinarySearch.offsetBinarySearch(a, fromIndex, toIndex, key);
+                int actual = OffsetBinarySearch.binarySearch(a, fromIndex, toIndex, key);
                 int expected = Arrays.binarySearch(a, fromIndex, toIndex, key);
                 assertEquals(expected, actual, "key=" + key);
             }
+        }
+    }
+
+    private void testAllValues(int[] a, int fromIndex, int toIndex) {
+        Set<Integer> distinct = new HashSet<>();
+        int[] actual = new int[toIndex - fromIndex];
+        OffsetBinarySearch.binarySearch(a, fromIndex, toIndex, a, fromIndex, toIndex, actual);
+        for (int i = fromIndex; i < toIndex; i++) {
+            int expected = Arrays.binarySearch(a, fromIndex, toIndex, a[i]);
+            assertEquals(expected, actual[i - fromIndex]);
         }
     }
 
@@ -86,7 +113,7 @@ class OffsetBinarySearchTest {
                     continue;
                 }
 
-                int actual = OffsetBinarySearch.offsetBinarySearch(a, fromIndex, toIndex, key);
+                int actual = OffsetBinarySearch.binarySearch(a, fromIndex, toIndex, key);
                 int firstIndex = list.indexOf(key);
                 if (firstIndex >= 0) {
                     firstIndex += fromIndex;
