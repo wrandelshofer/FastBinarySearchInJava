@@ -112,19 +112,16 @@ public class OffsetBinarySearch {
                 IntVector midVec = indexVec.add(half);
                 midVec.intoArray(indexArray, 0);
                 IntVector value = IntVector.fromArray(SPECIES, a, 0, indexArray, 0);
-                VectorMask<Integer> greaterEqualMask = keyVec.compare(VectorOperators.GE, value);
-                indexVec = indexVec.blend(midVec, greaterEqualMask);
+                indexVec = indexVec.blend(midVec, keyVec.compare(VectorOperators.GE, value));
                 size -= half;
             }
 
             indexVec.intoArray(indexArray, 0);
             IntVector value = IntVector.fromArray(SPECIES, a, 0, indexArray, 0);
-            VectorMask<Integer> greaterMask = keyVec.compare(VectorOperators.GT, value);
-            VectorMask<Integer> lesserMask = keyVec.compare(VectorOperators.LT, value);
             IntVector oneComplement = indexVec.not();
-            indexVec = indexVec.blend(oneComplement, greaterMask);
-            indexVec = indexVec.blend(oneComplement.sub(1), lesserMask);
-            indexVec.intoArray(results, offset - keysFromIndex, arrayMask);
+            indexVec.blend(oneComplement, keyVec.compare(VectorOperators.GT, value))
+                    .blend(oneComplement.sub(1), keyVec.compare(VectorOperators.LT, value))
+                    .intoArray(results, offset - keysFromIndex, arrayMask);
         }
     }
 }

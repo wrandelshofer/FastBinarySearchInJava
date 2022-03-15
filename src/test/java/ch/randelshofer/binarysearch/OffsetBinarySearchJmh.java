@@ -8,8 +8,10 @@ package ch.randelshofer.binarysearch;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
 import org.openjdk.jmh.annotations.Fork;
+import org.openjdk.jmh.annotations.Measurement;
 import org.openjdk.jmh.annotations.Mode;
 import org.openjdk.jmh.annotations.OutputTimeUnit;
+import org.openjdk.jmh.annotations.Warmup;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -51,8 +53,8 @@ import java.util.concurrent.TimeUnit;
  * </pre>
  */
 @Fork(value = 5, jvmArgsAppend = {"-XX:+UnlockExperimentalVMOptions", "--add-modules", "jdk.incubator.vector"})
-//@Measurement(iterations = 2)
-//@Warmup(iterations = 2)
+@Measurement(iterations = 5)
+@Warmup(iterations = 4)
 @OutputTimeUnit(TimeUnit.NANOSECONDS)
 @BenchmarkMode(Mode.AverageTime)
 public class OffsetBinarySearchJmh {
