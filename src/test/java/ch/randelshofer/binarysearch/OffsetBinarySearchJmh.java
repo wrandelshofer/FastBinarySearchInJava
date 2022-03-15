@@ -8,10 +8,8 @@ package ch.randelshofer.binarysearch;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
 import org.openjdk.jmh.annotations.Fork;
-import org.openjdk.jmh.annotations.Measurement;
 import org.openjdk.jmh.annotations.Mode;
 import org.openjdk.jmh.annotations.OutputTimeUnit;
-import org.openjdk.jmh.annotations.Warmup;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -28,15 +26,17 @@ import java.util.concurrent.TimeUnit;
  * Benchmark                                      Mode  Cnt   Score   Error  Units
  * ArraysBinarySearchHit                          avgt   25  32.194 ± 1.065  ns/op
  * ArraysBinarySearchMiss                         avgt   25  31.425 ± 1.161  ns/op
- * OffsetBinarySearchHit                          avgt   25  13.686 ± 0.019  ns/op
- * OffsetBinarySearchMiss                         avgt   25  13.682 ± 0.015  ns/op
  *
- * ArrayBinaryAllSearchHitOneByOne                avgt   25  34,655.962 ± 300.325  ns/op
- * ArrayBinaryAllSearchMissOneByOne               avgt   25  34,751.219 ± 683.322  ns/op
- * OffsetBinaryAllSearchHitOneByOne               avgt   25  12,138.700 ±  37.753  ns/op
- * OffsetBinaryAllSearchMissOneByOne              avgt   25  12,404.127 ± 125.693  ns/op
- * OffsetBinaryAllSearchHitVectorized             avgt   25   9,044.430 ±  22.650  ns/op
- * OffsetBinaryAllSearchMissVectorized            avgt   25   9,206.061 ±  70.883  ns/op
+ * OffsetBinarySearchHit                          avgt   25  14.007 ±   0.316  ns/op
+ * OffsetBinarySearchMiss                         avgt   25  13.647 ±   0.027  ns/op
+ *
+ * ArrayBinarySearchAllHitScalar                  avgt   25  34,655.962 ± 300.325  ns/op
+ * ArrayBinarySearchAllMissScalar                 avgt   25  34,751.219 ± 683.322  ns/op
+ *
+ * OffsetBinarySearchAllHitScalar                 avgt   25  12,480.853 ± 100.051  ns/op
+ * OffsetBinarySearchAllMissScalar                avgt   25  12,505.338 ±  45.492  ns/op
+ * OffsetBinarySearchAllHitVectorized             avgt   25  10,241.447 ± 249.028  ns/op
+ * OffsetBinarySearchAllMissVectorized            avgt   25   9,930.400 ± 173.538  ns/op
  * </pre>
  * <pre>
  * # JMH version: 1.34
@@ -50,9 +50,9 @@ import java.util.concurrent.TimeUnit;
  * OffsetBinarySearchJmh.mOffsetBinarySearchMiss  avgt   25  16.272 ± 0.065  ns/op
  * </pre>
  */
-@Fork(value = 2, jvmArgsAppend = {"-XX:+UnlockExperimentalVMOptions", "--add-modules", "jdk.incubator.vector"})
-@Measurement(iterations = 2)
-@Warmup(iterations = 2)
+@Fork(value = 5, jvmArgsAppend = {"-XX:+UnlockExperimentalVMOptions", "--add-modules", "jdk.incubator.vector"})
+//@Measurement(iterations = 2)
+//@Warmup(iterations = 2)
 @OutputTimeUnit(TimeUnit.NANOSECONDS)
 @BenchmarkMode(Mode.AverageTime)
 public class OffsetBinarySearchJmh {
@@ -98,15 +98,47 @@ public class OffsetBinarySearchJmh {
     }
 
     @Benchmark
-    public int mArraysBinarySearchHit() {
-        index = (index + 1) % hitKeys.length;
-        return Arrays.binarySearch(a, 0, a.length, hitKeys[index]);
-    }
-
-    @Benchmark
     public int mOffsetBinarySearchMiss() {
         index = (index + 1) % missKeys.length;
         return OffsetBinarySearch.binarySearch(a, 0, a.length, missKeys[index]);
+    }
+
+    @Benchmark
+    public int[] mOffsetBinarySearchAllMissVectorized() {
+        int[] result = new int[missKeys.length];
+        OffsetBinarySearch.binarySearch(a, 0, a.length, missKeys, 0, missKeys.length, result);
+        return result;
+    }
+
+    @Benchmark
+    public int[] mOffsetBinarySearchAllHitVectorized() {
+        int[] result = new int[hitKeys.length];
+        OffsetBinarySearch.binarySearch(a, 0, a.length, hitKeys, 0, hitKeys.length, result);
+        return result;
+    }
+
+    @Benchmark
+    public int[] mOffsetBinarySearchAllMissScalar() {
+        int[] result = new int[missKeys.length];
+        for (int i = 0; i < result.length; i++) {
+            result[i] = OffsetBinarySearch.binarySearch(a, 0, a.length, missKeys[i]);
+        }
+        return result;
+    }
+
+    @Benchmark
+    public int[] mOffsetBinarySearchAllHitScalar() {
+        int[] result = new int[hitKeys.length];
+        for (int i = 0; i < result.length; i++) {
+            result[i] = OffsetBinarySearch.binarySearch(a, 0, a.length, hitKeys[i]);
+        }
+        return result;
+    }
+
+    @Benchmark
+    public int mArraysBinarySearchHit() {
+        index = (index + 1) % hitKeys.length;
+        return Arrays.binarySearch(a, 0, a.length, hitKeys[index]);
     }
 
     @Benchmark
@@ -116,39 +148,7 @@ public class OffsetBinarySearchJmh {
     }
 
     @Benchmark
-    public int[] mOffsetBinaryAllSearchMissVectorized() {
-        int[] result = new int[missKeys.length];
-        OffsetBinarySearch.binarySearch(a, 0, a.length, missKeys, 0, missKeys.length, result);
-        return result;
-    }
-
-    @Benchmark
-    public int[] mOffsetBinaryAllSearchHitVectorized() {
-        int[] result = new int[hitKeys.length];
-        OffsetBinarySearch.binarySearch(a, 0, a.length, hitKeys, 0, hitKeys.length, result);
-        return result;
-    }
-
-    @Benchmark
-    public int[] mOffsetBinaryAllSearchMissOneByOne() {
-        int[] result = new int[missKeys.length];
-        for (int i = 0; i < result.length; i++) {
-            result[i] = OffsetBinarySearch.binarySearch(a, 0, a.length, missKeys[i]);
-        }
-        return result;
-    }
-
-    @Benchmark
-    public int[] mOffsetBinaryAllSearchHitOneByOne() {
-        int[] result = new int[hitKeys.length];
-        for (int i = 0; i < result.length; i++) {
-            result[i] = OffsetBinarySearch.binarySearch(a, 0, a.length, hitKeys[i]);
-        }
-        return result;
-    }
-
-    @Benchmark
-    public int[] mArrayBinaryAllSearchMissOneByOne() {
+    public int[] mArrayBinarySearchAllMissScalar() {
         int[] result = new int[missKeys.length];
         for (int i = 0; i < result.length; i++) {
             result[i] = Arrays.binarySearch(a, 0, a.length, missKeys[i]);
@@ -157,12 +157,11 @@ public class OffsetBinarySearchJmh {
     }
 
     @Benchmark
-    public int[] mArrayBinaryAllSearchHitOneByOne() {
+    public int[] mArrayBinarySearchAllHitScalar() {
         int[] result = new int[hitKeys.length];
         for (int i = 0; i < result.length; i++) {
             result[i] = Arrays.binarySearch(a, 0, a.length, hitKeys[i]);
         }
         return result;
     }
-
 }
