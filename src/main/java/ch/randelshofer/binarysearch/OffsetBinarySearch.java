@@ -6,11 +6,12 @@
 package ch.randelshofer.binarysearch;
 
 import jdk.incubator.vector.IntVector;
-import jdk.incubator.vector.VectorMask;
-import jdk.incubator.vector.VectorOperators;
-import jdk.incubator.vector.VectorSpecies;
 
 import java.util.Arrays;
+
+import static jdk.incubator.vector.VectorOperators.GE;
+import static jdk.incubator.vector.VectorOperators.GT;
+import static jdk.incubator.vector.VectorOperators.LT;
 
 /**
  * Implements offset binary search.
@@ -98,30 +99,30 @@ public class OffsetBinarySearch {
 
         int iterations = 32 - Integer.numberOfLeadingZeros(size);
 
-        final VectorSpecies<Integer> SPECIES = IntVector.SPECIES_PREFERRED;
+        final var SPECIES = IntVector.SPECIES_PREFERRED;
         int[] indexArray = new int[SPECIES.length()];
         for (int offset = keysFromIndex; offset < keys.length; offset += SPECIES.length()) {
             size = toIndex - fromIndex;
 
-            VectorMask<Integer> arrayMask = SPECIES.indexInRange(offset, keysToIndex);
-            IntVector keyVec = IntVector.fromArray(SPECIES, keys, offset, arrayMask);
+            var mask = SPECIES.indexInRange(offset, keysToIndex);
+            var key = IntVector.fromArray(SPECIES, keys, offset, mask);
 
-            IntVector indexVec = IntVector.broadcast(SPECIES, fromIndex);
+            var index = IntVector.broadcast(SPECIES, fromIndex);
             for (int n = iterations; n > 0; n--) {
                 int half = size >>> 1;
-                IntVector midVec = indexVec.add(half);
-                midVec.intoArray(indexArray, 0);
-                IntVector value = IntVector.fromArray(SPECIES, a, 0, indexArray, 0);
-                indexVec = indexVec.blend(midVec, keyVec.compare(VectorOperators.GE, value));
+                var mid = index.add(half);
+                mid.intoArray(indexArray, 0);
+                var value = IntVector.fromArray(SPECIES, a, 0, indexArray, 0);
+                index = index.blend(mid, key.compare(GE, value));
                 size -= half;
             }
 
-            indexVec.intoArray(indexArray, 0);
-            IntVector value = IntVector.fromArray(SPECIES, a, 0, indexArray, 0);
-            IntVector oneComplement = indexVec.not();
-            indexVec.blend(oneComplement, keyVec.compare(VectorOperators.GT, value))
-                    .blend(oneComplement.sub(1), keyVec.compare(VectorOperators.LT, value))
-                    .intoArray(results, offset - keysFromIndex, arrayMask);
+            index.intoArray(indexArray, 0);
+            var value = IntVector.fromArray(SPECIES, a, 0, indexArray, 0);
+            var oneComplement = index.not();
+            index.blend(oneComplement, key.compare(GT, value))
+                    .blend(oneComplement.sub(1), key.compare(LT, value))
+                    .intoArray(results, offset - keysFromIndex, mask);
         }
     }
 }
