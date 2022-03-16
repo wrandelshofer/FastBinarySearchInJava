@@ -25,14 +25,15 @@ import java.util.concurrent.TimeUnit;
  * # VM version: JDK 18, OpenJDK 64-Bit Server VM, 18+36-2087
  *
  * Benchmark                         Mode  Cnt      Score       Error  Units
- * SearchHit                         avgt    4      13.740 ±     0.978  ns/op
- * SearchMiss                        avgt    4      13.741 ±     1.044  ns/op
- * SearchAllHitScalar                avgt    4  12,422.142 ±   447.543  ns/op
- * SearchAllMissScalar               avgt    4  12,400.855 ±   544.529  ns/op
- * SearchAllMissVectorized           avgt   20   8,369.477 ±    96.603  ns/op
- * SearchAllHitVectorized            avgt   20   8,304.012 ±    28.216  ns/op
- * SearchAllHitVectorizedPredicate   avgt    4  10,880.944 ±   324.991  ns/op
- * SearchAllMissVectorizedPredicate  avgt    4  10,824.889 ±    60.735  ns/op
+ * Benchmark                                                  Mode  Cnt      Score    Error  Units
+ * SearchHit                         avgt   25     14.160 ±  0.344  ns/op
+ * SearchMiss                        avgt   25     13.934 ±  0.038  ns/op
+ * SearchAllHitScalar                avgt   25  12293.158 ± 67.062  ns/op
+ * SearchAllMissScalar               avgt   25  12145.919 ± 25.272  ns/op
+ * SearchAllMissVectorized           avgt   25   8119.625 ± 18.806  ns/op
+ * SearchAllHitVectorized            avgt   25   8177.012 ± 59.559  ns/op
+ * SearchAllMissVectorizedPredicate  avgt   25  10079.808 ± 30.428  ns/op
+ * SearchAllHitVectorizedPredicate   avgt   25  10221.243 ± 24.244  ns/op
  * </pre>
  * <pre>
  * # JMH version: 1.28
@@ -58,7 +59,7 @@ import java.util.concurrent.TimeUnit;
  * SearchMiss                          avgt   25       16.272 ± 0.065  ns/op
  * </pre>
  */
-@Fork(value = 4, jvmArgsAppend = {"-XX:+UnlockExperimentalVMOptions", "--add-modules", "jdk.incubator.vector"
+@Fork(value = 5, jvmArgsAppend = {"-XX:+UnlockExperimentalVMOptions", "--add-modules", "jdk.incubator.vector"
         //      ,"-XX:+UnlockDiagnosticVMOptions", "-XX:PrintAssemblyOptions=intel", "-XX:CompileCommand=print,ch/randelshofer/binarysearch/OffsetBinarySearch.*"
 })
 @Measurement(iterations = 5)
@@ -100,7 +101,7 @@ public class OffsetBinarySearchJmh {
         return a;
     }
 
-    /*
+
     @Benchmark
     public int m01SearchHit() {
         index = (index + 1) % hitKeys.length;
@@ -131,7 +132,7 @@ public class OffsetBinarySearchJmh {
         }
         return result;
     }
-*/
+
     @Benchmark
     public int[] m05SearchAllMissVectorized() {
         int[] result = new int[missKeys.length];
@@ -145,7 +146,7 @@ public class OffsetBinarySearchJmh {
         OffsetBinarySearch.binarySearch(a, 0, a.length, hitKeys, 0, hitKeys.length, result);
         return result;
     }
-/*
+
     @Benchmark
     public int[] m05SearchAllMissVectorizedPredicate() {
         int[] result = new int[missKeys.length];
@@ -159,5 +160,5 @@ public class OffsetBinarySearchJmh {
         OffsetBinarySearch.binarySearchWithPredicateRegisters(a, 0, a.length, hitKeys, 0, hitKeys.length, result);
         return result;
     }
-*/
+
 }

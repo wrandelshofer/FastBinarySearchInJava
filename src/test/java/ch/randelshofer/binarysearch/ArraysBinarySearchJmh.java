@@ -24,39 +24,37 @@ import java.util.concurrent.TimeUnit;
  * # JMH version: 1.34
  * # VM version: JDK 18, OpenJDK 64-Bit Server VM, 18+36-2087
  *
- * Benchmark                  Mode  Cnt      Score       Error  Units
- * SearchAllHitScalar         avgt    4  36,997.262 ±  2382.613  ns/op
- * SearchAllMissScalar        avgt    4  34,472.677 ± 14991.397  ns/op
- * SearchHit                  avgt    4      27.824 ±    17.369  ns/op
- * SearchMiss                 avgt    4      28.968 ±    16.935  ns/op
+ * Benchmark            Mode  Cnt       Score      Error  Units
+ * SearchHit            avgt   25      30.186 ±    0.511  ns/op
+ * SearchMiss           avgt   25      28.330 ±    1.558  ns/op
+ * SearchAllMissScalar  avgt   25  33,440.215 ± 1219.558  ns/op
+ * SearchAllHitScalar   avgt   25  33,888.931 ± 1527.506  ns/op
  * </pre>
  * <pre>
  * # JMH version: 1.28
  * # VM version: JDK 17, OpenJDK 64-Bit Server VM, 17+35-2724
  * # Intel(R) Core(TM) i7-8700B CPU @ 3.20GHz
  *
- * Benchmark                  Mode  Cnt       Score   Error  Units
- * SearchHit                  avgt   25      32.194 ± 1.065  ns/op
- * SearchMiss                 avgt   25      31.425 ± 1.161  ns/op
- * SearchAllHitScalar         avgt   25  34,655.962 ± 300.325  ns/op
- * SearchAllMissScalar        avgt   25  34,751.219 ± 683.322  ns/op
+ * Benchmark            Mode  Cnt       Score     Error  Units
+ * SearchHit            avgt   25      32.194 ±   1.065  ns/op
+ * SearchMiss           avgt   25      31.425 ±   1.161  ns/op
+ * SearchAllHitScalar   avgt   25  34,655.962 ± 300.325  ns/op
+ * SearchAllMissScalar  avgt   25  34,751.219 ± 683.322  ns/op
  * </pre>
  */
-@Fork(value = 2, jvmArgsAppend = {"-XX:+UnlockExperimentalVMOptions", "--add-modules", "jdk.incubator.vector"})
-@Measurement(iterations = 2)
-@Warmup(iterations = 2)
+@Fork(value = 5, jvmArgsAppend = {"-XX:+UnlockExperimentalVMOptions", "--add-modules", "jdk.incubator.vector"})
+@Measurement(iterations = 5)
+@Warmup(iterations = 4)
 @OutputTimeUnit(TimeUnit.NANOSECONDS)
 @BenchmarkMode(Mode.AverageTime)
 public class ArraysBinarySearchJmh {
     private static final int[] hitKeys = rndNoDuplicates(1023);
     private static final int[] missKeys = rndNoDuplicates(1023, hitKeys);
     private static final int[] a = hitKeys.clone();
-
+    private static int index;
     static {
         Arrays.sort(a);
     }
-
-    private static int index;
 
     private static int[] rndNoDuplicates(int n) {
         int[] a = new int[n];
