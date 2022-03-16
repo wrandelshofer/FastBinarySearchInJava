@@ -101,7 +101,57 @@ public class OffsetBinarySearch {
 
         final var SPECIES = IntVector.SPECIES_PREFERRED;
         int[] indexArray = new int[SPECIES.length()];
-        for (int offset = keysFromIndex; offset < keys.length; offset += SPECIES.length()) {
+        int upperBound = SPECIES.loopBound(keysToIndex);
+        int offset = keysFromIndex;
+        for (; offset < upperBound; offset += SPECIES.length()) {
+            size = toIndex - fromIndex;
+
+            var key = IntVector.fromArray(SPECIES, keys, offset);
+
+            var index = IntVector.broadcast(SPECIES, fromIndex);
+            for (int n = iterations; n > 0; n--) {
+                int half = size >>> 1;
+                var mid = index.add(half);
+                mid.intoArray(indexArray, 0);
+                var value = IntVector.fromArray(SPECIES, a, 0, indexArray, 0);
+                index = index.blend(mid, key.compare(GE, value));
+                size -= half;
+            }
+
+            index.intoArray(indexArray, 0);
+            var value = IntVector.fromArray(SPECIES, a, 0, indexArray, 0);
+            var oneComplement = index.not();
+            index.blend(oneComplement, key.compare(GT, value))
+                    .blend(oneComplement.sub(1), key.compare(LT, value))
+                    .intoArray(results, offset - keysFromIndex);
+        }
+
+        for (; offset < keysToIndex; offset++) {
+            results[offset - keysFromIndex] = binarySearch(a, fromIndex, toIndex, keys[offset]);
+        }
+    }
+
+    /**
+     * See {@link #binarySearch(int[], int, int, int[], int, int, int[])}.
+     * <p>
+     * The implementation in this method is optimised for platforms that support
+     * a predicate register.
+     */
+    public static void binarySearchWithPredicateRegisters(int[] a, int fromIndex, int toIndex,
+                                                          int[] keys, int keysFromIndex, int keysToIndex,
+                                                          int[] results) {
+
+        int size = toIndex - fromIndex;
+        if (size == 0) {
+            Arrays.fill(results, ~fromIndex);
+            return;
+        }
+
+        int iterations = 32 - Integer.numberOfLeadingZeros(size);
+
+        final var SPECIES = IntVector.SPECIES_PREFERRED;
+        int[] indexArray = new int[SPECIES.length()];
+        for (int offset = keysFromIndex; offset < keysToIndex; offset += SPECIES.length()) {
             size = toIndex - fromIndex;
 
             var mask = SPECIES.indexInRange(offset, keysToIndex);

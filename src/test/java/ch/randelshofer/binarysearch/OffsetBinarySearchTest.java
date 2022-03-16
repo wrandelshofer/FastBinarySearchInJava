@@ -91,12 +91,14 @@ class OffsetBinarySearchTest {
     }
 
     private void testAllValues(int[] a, int fromIndex, int toIndex) {
-        Set<Integer> distinct = new HashSet<>();
         int[] actual = new int[toIndex - fromIndex];
+        int[] actual2 = new int[toIndex - fromIndex];
         OffsetBinarySearch.binarySearch(a, fromIndex, toIndex, a, fromIndex, toIndex, actual);
+        OffsetBinarySearch.binarySearchWithPredicateRegisters(a, fromIndex, toIndex, a, fromIndex, toIndex, actual2);
         for (int i = fromIndex; i < toIndex; i++) {
             int expected = Arrays.binarySearch(a, fromIndex, toIndex, a[i]);
             assertEquals(expected, actual[i - fromIndex]);
+            assertEquals(expected, actual2[i - fromIndex]);
         }
     }
 
