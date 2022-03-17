@@ -11,6 +11,8 @@ import java.util.Arrays;
 
 import static jdk.incubator.vector.VectorOperators.GE;
 import static jdk.incubator.vector.VectorOperators.GT;
+import static jdk.incubator.vector.VectorOperators.IS_DEFAULT;
+import static jdk.incubator.vector.VectorOperators.IS_NEGATIVE;
 import static jdk.incubator.vector.VectorOperators.LT;
 
 /**
@@ -66,8 +68,8 @@ public class OffsetBinarySearch {
             size -= half;
         }
 
-        int value = a[index];
-        return value == key ? index : (value < key ? ~index - 1 : ~index);
+        int sign = a[index] - key;
+        return sign == 0 ? index : (sign < 0 ? ~index - 1 : ~index);
     }
 
     /**
@@ -119,10 +121,11 @@ public class OffsetBinarySearch {
             }
 
             index.intoArray(indexArray, 0);
-            var value = IntVector.fromArray(SPECIES, a, 0, indexArray, 0);
+            var sign = IntVector.fromArray(SPECIES, a, 0, indexArray, 0)
+                    .sub(key);
             var oneComplement = index.not();
-            index.blend(oneComplement, key.compare(GT, value))
-                    .blend(oneComplement.sub(1), key.compare(LT, value))
+            index.blend(oneComplement, sign.test(IS_DEFAULT).not())
+                    .blend(oneComplement.sub(1), sign.test(IS_NEGATIVE))
                     .intoArray(results, offset - keysFromIndex);
         }
 

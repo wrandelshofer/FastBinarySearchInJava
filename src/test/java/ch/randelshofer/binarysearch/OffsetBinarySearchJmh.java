@@ -24,39 +24,15 @@ import java.util.concurrent.TimeUnit;
  * # JMH version: 1.34
  * # VM version: JDK 18, OpenJDK 64-Bit Server VM, 18+36-2087
  *
- * Benchmark                         Mode  Cnt      Score       Error  Units
- * Benchmark                                                  Mode  Cnt      Score    Error  Units
- * SearchHit                         avgt   25     14.160 ±  0.344  ns/op
- * SearchMiss                        avgt   25     13.934 ±  0.038  ns/op
- * SearchAllHitScalar                avgt   25  12293.158 ± 67.062  ns/op
- * SearchAllMissScalar               avgt   25  12145.919 ± 25.272  ns/op
- * SearchAllMissVectorized           avgt   25   8119.625 ± 18.806  ns/op
- * SearchAllHitVectorized            avgt   25   8177.012 ± 59.559  ns/op
- * SearchAllMissVectorizedPredicate  avgt   25  10079.808 ± 30.428  ns/op
- * SearchAllHitVectorizedPredicate   avgt   25  10221.243 ± 24.244  ns/op
- * </pre>
- * <pre>
- * # JMH version: 1.28
- * # VM version: JDK 17, OpenJDK 64-Bit Server VM, 17+35-2724
- * # Intel(R) Core(TM) i7-8700B CPU @ 3.20GHz
- *
- * Benchmark                         Mode  Cnt      Score      Error  Units
- * SearchHit                         avgt   25      14.007 ±   0.316  ns/op
- * SearchMiss                        avgt   25      13.647 ±   0.027  ns/op
- *
- * SearchAllHitScalar                avgt   25  12,480.853 ± 100.051  ns/op
- * SearchAllMissScalar               avgt   25  12,505.338 ±  45.492  ns/op
- * SearchAllHitVectorizedPredicate   avgt   25  10,241.447 ± 249.028  ns/op
- * SearchAllMissVectorizedPredicate  avgt   25   9,930.400 ± 173.538  ns/op
- * </pre>
- * <pre>
- * # JMH version: 1.34
- * # VM version: JDK 1.8.0_261, Java HotSpot(TM) 64-Bit Server VM, 25.261-b12
- * # Intel(R) Core(TM) i7-8700B CPU @ 3.20GHz
- *
- * Benchmark                           Mode  Cnt        Score   Error  Units
- * SearchHit                           avgt   25       16.229 ± 0.057  ns/op
- * SearchMiss                          avgt   25       16.272 ± 0.065  ns/op
+ * Benchmark                         Mode  Cnt       Score    Error  Units
+ * SearchHit                         avgt   25      13.481 ±  0.154  ns/op
+ * SearchMiss                        avgt   25      13.430 ±  0.050  ns/op
+ * SearchAllHitScalar                avgt   25  12,293.158 ± 67.062  ns/op
+ * SearchAllMissScalar               avgt   25  12,145.919 ± 25.272  ns/op
+ * SearchAllHitVectorized            avgt   25   8,033.037 ± 34.174  ns/op
+ * SearchAllMissVectorized           avgt   25   8,012.251 ± 23.834  ns/op
+ * SearchAllMissVectorizedPredicate  avgt   25  10,079.808 ± 30.428  ns/op
+ * SearchAllHitVectorizedPredicate   avgt   25  10,221.243 ± 24.244  ns/op
  * </pre>
  */
 @Fork(value = 5, jvmArgsAppend = {"-XX:+UnlockExperimentalVMOptions", "--add-modules", "jdk.incubator.vector"
@@ -160,5 +136,4 @@ public class OffsetBinarySearchJmh {
         OffsetBinarySearch.binarySearchWithPredicateRegisters(a, 0, a.length, hitKeys, 0, hitKeys.length, result);
         return result;
     }
-
 }
