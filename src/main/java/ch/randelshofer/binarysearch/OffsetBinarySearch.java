@@ -51,9 +51,8 @@ public class OffsetBinarySearch {
      */
     public static int binarySearch(int[] a, int fromIndex, int toIndex,
                                    int key) {
-
         int size = toIndex - fromIndex;
-        if (size == 0) {
+        if (size <= 0) {
             return ~fromIndex;
         }
 
@@ -89,12 +88,93 @@ public class OffsetBinarySearch {
      * @param results   indices of keys in {@code a}, if the keys are present in {@code a}.
      *                  {@code ~(insertionPoint)} if they keys are absent in {@code a}.
      */
-    public static void binarySearch(int[] a, int fromIndex, int toIndex,
-                                    int[] keys, int keysFromIndex, int keysToIndex,
-                                    int[] results) {
+    public static void binarySearchUnrolled(int[] a, int fromIndex, int toIndex,
+                                            int[] keys, int keysFromIndex, int keysToIndex,
+                                            int[] results) {
 
         int size = toIndex - fromIndex;
-        if (size == 0) {
+        if (size <= 0) {
+            Arrays.fill(results, ~fromIndex);
+            return;
+        }
+
+        int offset = keysFromIndex;
+        int index0, index1, index2, index3;
+        int half;
+        int mid0, mid1, mid2, mid3;
+        int key0, key1, key2, key3;
+        int sign0, sign1, sign2, sign3;
+        int upperBound = fromIndex + ((toIndex - fromIndex) & -4);
+        int iterations = 32 - Integer.numberOfLeadingZeros(size);
+        for (; offset < upperBound; offset += 4) {
+            index0 = fromIndex;
+            index1 = fromIndex;
+            index2 = fromIndex;
+            index3 = fromIndex;
+            key0 = keys[offset];
+            key1 = keys[offset + 1];
+            key2 = keys[offset + 2];
+            key3 = keys[offset + 3];
+            size = toIndex - fromIndex;
+            for (int n = iterations; n > 0; n--) {
+                half = size >>> 1;
+                mid0 = index0 + half;
+                if (key0 >= a[mid0]) {
+                    index0 = mid0;
+                }
+                mid1 = index1 + half;
+                if (key1 >= a[mid1]) {
+                    index1 = mid1;
+                }
+                mid2 = index2 + half;
+                if (key2 >= a[mid2]) {
+                    index2 = mid2;
+                }
+                mid3 = index3 + half;
+                if (key3 >= a[mid3]) {
+                    index3 = mid3;
+                }
+                size -= half;
+            }
+            sign0 = a[index0] - key0;
+            sign1 = a[index1] - key1;
+            sign2 = a[index2] - key2;
+            sign3 = a[index3] - key3;
+            results[offset - fromIndex] = sign0 == 0 ? index0 : (sign0 < 0 ? ~index0 - 1 : ~index0);
+            results[offset + 1 - fromIndex] = sign1 == 0 ? index1 : (sign1 < 0 ? ~index1 - 1 : ~index1);
+            results[offset + 2 - fromIndex] = sign2 == 0 ? index2 : (sign2 < 0 ? ~index2 - 1 : ~index2);
+            results[offset + 3 - fromIndex] = sign3 == 0 ? index3 : (sign3 < 0 ? ~index3 - 1 : ~index3);
+        }
+
+
+        for (; offset < keysToIndex; offset++) {
+            results[offset - keysFromIndex] = binarySearch(a, fromIndex, toIndex, keys[offset]);
+        }
+    }
+
+    /**
+     * Searches for the provided keys in the given array.
+     * <p>
+     * The array must be sorted in ascending order.
+     * <p>
+     * If the array has no duplicates then the result is identical to
+     * {@link Arrays#binarySearch}. If the array has duplicates, then
+     * the algorithm will pick different duplicate values than
+     * {@link Arrays#binarySearch}.
+     *
+     * @param a         the array
+     * @param fromIndex from inclusive
+     * @param toIndex   to exclusive
+     * @param keys      the keys
+     * @param results   indices of keys in {@code a}, if the keys are present in {@code a}.
+     *                  {@code ~(insertionPoint)} if they keys are absent in {@code a}.
+     */
+    public static void binarySearchVectorized(int[] a, int fromIndex, int toIndex,
+                                              int[] keys, int keysFromIndex, int keysToIndex,
+                                              int[] results) {
+
+        int size = toIndex - fromIndex;
+        if (size <= 0) {
             Arrays.fill(results, ~fromIndex);
             return;
         }
@@ -102,31 +182,30 @@ public class OffsetBinarySearch {
         int iterations = 32 - Integer.numberOfLeadingZeros(size);
 
         final var SPECIES = IntVector.SPECIES_PREFERRED;
-        int[] indexArray = new int[SPECIES.length()];
         int upperBound = SPECIES.loopBound(keysToIndex);
         int offset = keysFromIndex;
         for (; offset < upperBound; offset += SPECIES.length()) {
+            int resultOffset = offset - keysFromIndex;
             size = toIndex - fromIndex;
 
             var key = IntVector.fromArray(SPECIES, keys, offset);
-
             var index = IntVector.broadcast(SPECIES, fromIndex);
             for (int n = iterations; n > 0; n--) {
                 int half = size >>> 1;
                 var mid = index.add(half);
-                mid.intoArray(indexArray, 0);
-                var value = IntVector.fromArray(SPECIES, a, 0, indexArray, 0);
+                mid.intoArray(results, resultOffset);
+                var value = IntVector.fromArray(SPECIES, a, 0, results, resultOffset);
                 index = index.blend(mid, key.compare(GE, value));
                 size -= half;
             }
 
-            index.intoArray(indexArray, 0);
-            var sign = IntVector.fromArray(SPECIES, a, 0, indexArray, 0)
+            index.intoArray(results, resultOffset);
+            var sign = IntVector.fromArray(SPECIES, a, 0, results, resultOffset)
                     .sub(key);
             var oneComplement = index.not();
             index.blend(oneComplement, sign.test(IS_DEFAULT).not())
                     .blend(oneComplement.sub(1), sign.test(IS_NEGATIVE))
-                    .intoArray(results, offset - keysFromIndex);
+                    .intoArray(results, resultOffset);
         }
 
         for (; offset < keysToIndex; offset++) {
@@ -135,17 +214,17 @@ public class OffsetBinarySearch {
     }
 
     /**
-     * See {@link #binarySearch(int[], int, int, int[], int, int, int[])}.
+     * See {@link #binarySearchVectorized(int[], int, int, int[], int, int, int[])}.
      * <p>
      * The implementation in this method is optimised for platforms that support
      * a predicate register.
      */
-    public static void binarySearchWithPredicateRegisters(int[] a, int fromIndex, int toIndex,
-                                                          int[] keys, int keysFromIndex, int keysToIndex,
-                                                          int[] results) {
+    public static void binarySearchVectorizedPredicate(int[] a, int fromIndex, int toIndex,
+                                                       int[] keys, int keysFromIndex, int keysToIndex,
+                                                       int[] results) {
 
         int size = toIndex - fromIndex;
-        if (size == 0) {
+        if (size <= 0) {
             Arrays.fill(results, ~fromIndex);
             return;
         }

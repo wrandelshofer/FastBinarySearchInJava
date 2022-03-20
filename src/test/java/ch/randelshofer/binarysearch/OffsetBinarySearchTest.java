@@ -23,6 +23,8 @@ class OffsetBinarySearchTest {
     @TestFactory
     public List<DynamicTest> testsWithDistinctValues() {
         return Arrays.asList(
+                dynamicTest("size 0", () -> testDistinctValues(new int[]{}, 0, 0)),
+                dynamicTest("size 1", () -> testDistinctValues(new int[]{1}, 0, 1)),
                 dynamicTest("1", () -> testDistinctValues(new int[]{1, 2, 3, 4}, 0, 4)),
                 dynamicTest("2", () -> testDistinctValues(new int[]{1, 3, 5, 7}, 0, 4)),
                 dynamicTest("3", () -> testDistinctValues(new int[]{2, 4, 8, 10}, 0, 4)),
@@ -93,12 +95,15 @@ class OffsetBinarySearchTest {
     private void testAllValues(int[] a, int fromIndex, int toIndex) {
         int[] actual = new int[toIndex - fromIndex];
         int[] actual2 = new int[toIndex - fromIndex];
-        OffsetBinarySearch.binarySearch(a, fromIndex, toIndex, a, fromIndex, toIndex, actual);
-        OffsetBinarySearch.binarySearchWithPredicateRegisters(a, fromIndex, toIndex, a, fromIndex, toIndex, actual2);
+        int[] actual3 = new int[toIndex - fromIndex];
+        OffsetBinarySearch.binarySearchVectorized(a, fromIndex, toIndex, a, fromIndex, toIndex, actual);
+        OffsetBinarySearch.binarySearchVectorizedPredicate(a, fromIndex, toIndex, a, fromIndex, toIndex, actual2);
+        OffsetBinarySearch.binarySearchUnrolled(a, fromIndex, toIndex, a, fromIndex, toIndex, actual3);
         for (int i = fromIndex; i < toIndex; i++) {
             int expected = Arrays.binarySearch(a, fromIndex, toIndex, a[i]);
             assertEquals(expected, actual[i - fromIndex]);
             assertEquals(expected, actual2[i - fromIndex]);
+            assertEquals(expected, actual3[i - fromIndex]);
         }
     }
 

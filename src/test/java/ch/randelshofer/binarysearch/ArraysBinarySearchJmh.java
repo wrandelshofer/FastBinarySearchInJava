@@ -48,7 +48,7 @@ import java.util.concurrent.TimeUnit;
 @OutputTimeUnit(TimeUnit.NANOSECONDS)
 @BenchmarkMode(Mode.AverageTime)
 public class ArraysBinarySearchJmh {
-    private static final int[] hitKeys = rndNoDuplicates(1023);
+    private static final int[] hitKeys = rndNoDuplicates(1);
     private static final int[] missKeys = rndNoDuplicates(1023, hitKeys);
     private static final int[] a = hitKeys.clone();
     private static int index;
@@ -62,7 +62,7 @@ public class ArraysBinarySearchJmh {
         Random rng = new Random(0);
         for (int i = 0; i < n; i++) {
             do {
-                a[i] = rng.nextInt();
+                a[i] = rng.nextInt(n * 3);
             } while (!set.add(a[i]));
         }
         return a;
@@ -75,7 +75,7 @@ public class ArraysBinarySearchJmh {
         Random rng = new Random(0);
         for (int i = 0; i < n; i++) {
             do {
-                a[i] = rng.nextInt();
+                a[i] = rng.nextInt(n * 3);
             } while (!set.contains(a[i]));
         }
         return a;
