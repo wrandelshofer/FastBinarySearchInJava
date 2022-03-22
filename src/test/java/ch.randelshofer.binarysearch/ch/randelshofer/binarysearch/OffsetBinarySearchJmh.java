@@ -25,12 +25,12 @@ import java.util.concurrent.TimeUnit;
  * # VM version: JDK 18, OpenJDK 64-Bit Server VM, 18+36-2087
  *
  * Benchmark                         Mode  Cnt       Score    Error  Units
- * SearchHit                         avgt   25      13.481 ±  0.154  ns/op
- * SearchMiss                        avgt   25      13.430 ±  0.050  ns/op
- * SearchAllHitScalar                avgt   25  12,293.158 ± 67.062  ns/op
- * SearchAllMissScalar               avgt   25  12,145.919 ± 25.272  ns/op
- * SearchAllHitUnrolled              avgt   25  10,057.360 ± 49.586  ns/op
- * SearchAllMissUnrolled             avgt   25  10,010.886 ± 43.041  ns/op
+ * SearchHit                         avgt   25      13.573 ±  0.030  ns/op
+ * SearchMiss                        avgt   25      13.528 ±  0.023  ns/op
+ * SearchAllHitScalar                avgt   25  11,814.770 ± 26.620  ns/op
+ * SearchAllMissScalar               avgt   25  11,764.145 ± 38.127  ns/op
+ * SearchAllHitUnrolled              avgt   25   9,959.253 ± 40.935  ns/op
+ * SearchAllMissUnrolled             avgt   25   9,972.491 ± 45.669  ns/op
  * SearchAllHitVectorized            avgt   25   8,071.904 ± 13.599  ns/op
  * SearchAllMissVectorized           avgt   25   8,092.165 ± 49.610  ns/op
  * SearchAllMissVectorizedPredicate  avgt   25  10,079.808 ± 30.428  ns/op
@@ -123,7 +123,7 @@ public class OffsetBinarySearchJmh {
         OffsetBinarySearch.binarySearchUnrolled(a, 0, a.length, hitKeys, 0, hitKeys.length, result);
         return result;
     }
-
+/*
     @Benchmark
     public int[] m08SearchAllMissVectorized() {
         int[] result = new int[missKeys.length];
@@ -151,4 +151,5 @@ public class OffsetBinarySearchJmh {
         OffsetBinarySearch.binarySearchVectorizedPredicate(a, 0, a.length, hitKeys, 0, hitKeys.length, result);
         return result;
     }
+    */
 }

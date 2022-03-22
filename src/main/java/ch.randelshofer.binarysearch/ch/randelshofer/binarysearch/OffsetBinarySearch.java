@@ -68,7 +68,7 @@ public class OffsetBinarySearch {
         }
 
         int sign = a[index] - key;
-        return sign == 0 ? index : (sign < 0 ? ~index - 1 : ~index);
+        return sign == 0 ? index : ~index + (sign >> -1);
     }
 
     /**
@@ -140,10 +140,10 @@ public class OffsetBinarySearch {
             sign1 = a[index1] - key1;
             sign2 = a[index2] - key2;
             sign3 = a[index3] - key3;
-            results[offset - fromIndex] = sign0 == 0 ? index0 : (sign0 < 0 ? ~index0 - 1 : ~index0);
-            results[offset + 1 - fromIndex] = sign1 == 0 ? index1 : (sign1 < 0 ? ~index1 - 1 : ~index1);
-            results[offset + 2 - fromIndex] = sign2 == 0 ? index2 : (sign2 < 0 ? ~index2 - 1 : ~index2);
-            results[offset + 3 - fromIndex] = sign3 == 0 ? index3 : (sign3 < 0 ? ~index3 - 1 : ~index3);
+            results[offset - fromIndex] = sign0 == 0 ? index0 : ~index0 + (sign0 >> -1);
+            results[offset + 1 - fromIndex] = sign1 == 0 ? index1 : ~index1 + (sign1 >> -1);
+            results[offset + 2 - fromIndex] = sign2 == 0 ? index2 : ~index2 + (sign2 >> -1);
+            results[offset + 3 - fromIndex] = sign3 == 0 ? index3 : ~index3 + (sign3 >> -1);
         }
 
 
