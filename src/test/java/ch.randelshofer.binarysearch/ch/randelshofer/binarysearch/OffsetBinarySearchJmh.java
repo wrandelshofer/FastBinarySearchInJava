@@ -14,10 +14,10 @@ import org.openjdk.jmh.annotations.OutputTimeUnit;
 import org.openjdk.jmh.annotations.Warmup;
 
 import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Random;
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
+
+import static ch.randelshofer.binarysearch.ArrayUtil.rndFiftyFifty;
+import static ch.randelshofer.binarysearch.ArrayUtil.rndNoDuplicates;
 
 /**
  * <pre>
@@ -25,16 +25,11 @@ import java.util.concurrent.TimeUnit;
  * # VM version: JDK 18, OpenJDK 64-Bit Server VM, 18+36-2087
  *
  * Benchmark                         Mode  Cnt       Score    Error  Units
- * SearchHit                         avgt   25      13.573 ±  0.030  ns/op
- * SearchMiss                        avgt   25      13.528 ±  0.023  ns/op
- * SearchAllHitScalar                avgt   25  11,814.770 ± 26.620  ns/op
- * SearchAllMissScalar               avgt   25  11,764.145 ± 38.127  ns/op
- * SearchAllHitUnrolled              avgt   25   9,959.253 ± 40.935  ns/op
- * SearchAllMissUnrolled             avgt   25   9,972.491 ± 45.669  ns/op
- * SearchAllHitVectorized            avgt   25   8,071.904 ± 13.599  ns/op
- * SearchAllMissVectorized           avgt   25   8,092.165 ± 49.610  ns/op
- * SearchAllMissVectorizedPredicate  avgt   25  10,079.808 ± 30.428  ns/op
- * SearchAllHitVectorizedPredicate   avgt   25  10,221.243 ± 24.244  ns/op
+ * Search                        avgt   25     13.782 ±  0.105  ns/op
+ * SearchAllScalar               avgt   25  11491.885 ± 46.023  ns/op
+ * SearchAllUnrolled             avgt   25   9833.562 ± 58.176  ns/op
+ * SearchAllVectorized           avgt   25   7824.237 ± 17.661  ns/op
+ * SearchAllVectorizedPredicate  avgt   25   8076.007 ± 22.956  ns/op
  * </pre>
  */
 @Fork(value = 5, jvmArgsAppend = {"-XX:+UnlockExperimentalVMOptions", "--add-modules", "jdk.incubator.vector"
@@ -45,8 +40,9 @@ import java.util.concurrent.TimeUnit;
 @OutputTimeUnit(TimeUnit.NANOSECONDS)
 @BenchmarkMode(Mode.AverageTime)
 public class OffsetBinarySearchJmh {
-    private static final int[] hitKeys = rndNoDuplicates(1023);
-    private static final int[] missKeys = rndNoDuplicates(1023, hitKeys);
+    private static final int[] hitKeys = rndNoDuplicates(1000);
+    private static final int[] missKeys = rndNoDuplicates(1000, hitKeys);
+    private static final int[] fiftyFiftyKeys = rndFiftyFifty(missKeys, hitKeys);
     private static final int[] a = hitKeys.clone();
     private static int index;
 
@@ -54,102 +50,39 @@ public class OffsetBinarySearchJmh {
         Arrays.sort(a);
     }
 
-    private static int[] rndNoDuplicates(int n) {
-        int[] a = new int[n];
-        Set<Integer> set = new HashSet<>();
-        Random rng = new Random(0);
-        for (int i = 0; i < n; i++) {
-            do {
-                a[i] = rng.nextInt(n * 3);
-            } while (!set.add(a[i]));
-        }
-        return a;
-    }
-
-    private static int[] rndNoDuplicates(int n, int[] keys) {
-        int[] a = new int[n];
-        Set<Integer> set = new HashSet<>(keys.length);
-        for (int k : keys) set.add(k);
-        Random rng = new Random(0);
-        for (int i = 0; i < n; i++) {
-            do {
-                a[i] = rng.nextInt(n * 3);
-            } while (!set.contains(a[i]));
-        }
-        return a;
+    @Benchmark
+    public int m01Search() {
+        index = (index + 1) % fiftyFiftyKeys.length;
+        return OffsetBinarySearch.binarySearch(a, 0, a.length, fiftyFiftyKeys[index]);
     }
 
     @Benchmark
-    public int m01SearchHit() {
-        index = (index + 1) % hitKeys.length;
-        return OffsetBinarySearch.binarySearch(a, 0, a.length, hitKeys[index]);
-    }
-
-
-    @Benchmark
-    public int m02SearchMiss() {
-        index = (index + 1) % missKeys.length;
-        return OffsetBinarySearch.binarySearch(a, 0, a.length, missKeys[index]);
-    }
-
-    @Benchmark
-    public int[] m03SearchAllHitScalar() {
-        int[] result = new int[hitKeys.length];
+    public int[] m03SearchAllScalar() {
+        int[] result = new int[fiftyFiftyKeys.length];
         for (int i = 0; i < result.length; i++) {
-            result[i] = OffsetBinarySearch.binarySearch(a, 0, a.length, hitKeys[i]);
+            result[i] = OffsetBinarySearch.binarySearch(a, 0, a.length, fiftyFiftyKeys[i]);
         }
         return result;
     }
 
     @Benchmark
-    public int[] m04SearchAllMissScalar() {
-        int[] result = new int[missKeys.length];
-        for (int i = 0; i < result.length; i++) {
-            result[i] = OffsetBinarySearch.binarySearch(a, 0, a.length, missKeys[i]);
-        }
+    public int[] m06SearchAllUnrolled() {
+        int[] result = new int[fiftyFiftyKeys.length];
+        OffsetBinarySearch.binarySearchUnrolled(a, 0, a.length, fiftyFiftyKeys, 0, missKeys.length, result);
         return result;
     }
 
     @Benchmark
-    public int[] m06SearchAllMissUnrolled() {
-        int[] result = new int[missKeys.length];
-        OffsetBinarySearch.binarySearchUnrolled(a, 0, a.length, missKeys, 0, missKeys.length, result);
+    public int[] m08SearchAllVectorized() {
+        int[] result = new int[fiftyFiftyKeys.length];
+        OffsetBinarySearch.binarySearchVectorized(a, 0, a.length, fiftyFiftyKeys, 0, missKeys.length, result);
         return result;
     }
 
     @Benchmark
-    public int[] m05SearchAllHitUnrolled() {
-        int[] result = new int[hitKeys.length];
-        OffsetBinarySearch.binarySearchUnrolled(a, 0, a.length, hitKeys, 0, hitKeys.length, result);
+    public int[] m10SearchAllVectorizedPredicate() {
+        int[] result = new int[fiftyFiftyKeys.length];
+        OffsetBinarySearch.binarySearchVectorizedPredicate(a, 0, a.length, fiftyFiftyKeys, 0, missKeys.length, result);
         return result;
     }
-/*
-    @Benchmark
-    public int[] m08SearchAllMissVectorized() {
-        int[] result = new int[missKeys.length];
-        OffsetBinarySearch.binarySearchVectorized(a, 0, a.length, missKeys, 0, missKeys.length, result);
-        return result;
-    }
-
-    @Benchmark
-    public int[] m07SearchAllHitVectorized() {
-        int[] result = new int[hitKeys.length];
-        OffsetBinarySearch.binarySearchVectorized(a, 0, a.length, hitKeys, 0, hitKeys.length, result);
-        return result;
-    }
-
-    @Benchmark
-    public int[] m10SearchAllMissVectorizedPredicate() {
-        int[] result = new int[missKeys.length];
-        OffsetBinarySearch.binarySearchVectorizedPredicate(a, 0, a.length, missKeys, 0, missKeys.length, result);
-        return result;
-    }
-
-    @Benchmark
-    public int[] m09SearchAllHitVectorizedPredicate() {
-        int[] result = new int[hitKeys.length];
-        OffsetBinarySearch.binarySearchVectorizedPredicate(a, 0, a.length, hitKeys, 0, hitKeys.length, result);
-        return result;
-    }
-    */
 }

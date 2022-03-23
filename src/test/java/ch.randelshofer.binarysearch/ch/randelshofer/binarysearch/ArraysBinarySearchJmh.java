@@ -14,32 +14,19 @@ import org.openjdk.jmh.annotations.OutputTimeUnit;
 import org.openjdk.jmh.annotations.Warmup;
 
 import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Random;
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
+
+import static ch.randelshofer.binarysearch.ArrayUtil.rndFiftyFifty;
+import static ch.randelshofer.binarysearch.ArrayUtil.rndNoDuplicates;
 
 /**
  * <pre>
  * # JMH version: 1.34
  * # VM version: JDK 18, OpenJDK 64-Bit Server VM, 18+36-2087
  *
- * Benchmark            Mode  Cnt       Score      Error  Units
- * SearchHit            avgt   25      30.186 ±    0.511  ns/op
- * SearchMiss           avgt   25      28.330 ±    1.558  ns/op
- * SearchAllMissScalar  avgt   25  33,440.215 ± 1219.558  ns/op
- * SearchAllHitScalar   avgt   25  33,888.931 ± 1527.506  ns/op
- * </pre>
- * <pre>
- * # JMH version: 1.28
- * # VM version: JDK 17, OpenJDK 64-Bit Server VM, 17+35-2724
- * # Intel(R) Core(TM) i7-8700B CPU @ 3.20GHz
- *
- * Benchmark            Mode  Cnt       Score     Error  Units
- * SearchHit            avgt   25      32.194 ±   1.065  ns/op
- * SearchMiss           avgt   25      31.425 ±   1.161  ns/op
- * SearchAllHitScalar   avgt   25  34,655.962 ± 300.325  ns/op
- * SearchAllMissScalar  avgt   25  34,751.219 ± 683.322  ns/op
+ * Benchmark  Mode  Cnt       Score     Error  Units
+ * Search     avgt   25      36.055 ±   0.376  ns/op
+ * SearchAll  avgt   25  32,587.259 ± 440.333  ns/op
  * </pre>
  */
 @Fork(value = 5, jvmArgsAppend = {"-XX:+UnlockExperimentalVMOptions", "--add-modules", "jdk.incubator.vector"})
@@ -48,65 +35,27 @@ import java.util.concurrent.TimeUnit;
 @OutputTimeUnit(TimeUnit.NANOSECONDS)
 @BenchmarkMode(Mode.AverageTime)
 public class ArraysBinarySearchJmh {
-    private static final int[] hitKeys = rndNoDuplicates(1);
-    private static final int[] missKeys = rndNoDuplicates(1023, hitKeys);
+    private static final int[] hitKeys = rndNoDuplicates(1000);
+    private static final int[] missKeys = rndNoDuplicates(1000, hitKeys);
+    private static final int[] fiftyFiftyKeys = rndFiftyFifty(missKeys, hitKeys);
     private static final int[] a = hitKeys.clone();
     private static int index;
+
     static {
         Arrays.sort(a);
     }
 
-    private static int[] rndNoDuplicates(int n) {
-        int[] a = new int[n];
-        Set<Integer> set = new HashSet<>();
-        Random rng = new Random(0);
-        for (int i = 0; i < n; i++) {
-            do {
-                a[i] = rng.nextInt(n * 3);
-            } while (!set.add(a[i]));
-        }
-        return a;
-    }
-
-    private static int[] rndNoDuplicates(int n, int[] keys) {
-        int[] a = new int[n];
-        Set<Integer> set = new HashSet<>(keys.length);
-        for (int k : keys) set.add(k);
-        Random rng = new Random(0);
-        for (int i = 0; i < n; i++) {
-            do {
-                a[i] = rng.nextInt(n * 3);
-            } while (!set.contains(a[i]));
-        }
-        return a;
+    @Benchmark
+    public int m01Search() {
+        index = (index + 1) % fiftyFiftyKeys.length;
+        return Arrays.binarySearch(a, 0, a.length, fiftyFiftyKeys[index]);
     }
 
     @Benchmark
-    public int m01SearchHit() {
-        index = (index + 1) % hitKeys.length;
-        return Arrays.binarySearch(a, 0, a.length, hitKeys[index]);
-    }
-
-    @Benchmark
-    public int m02SearchMiss() {
-        index = (index + 1) % missKeys.length;
-        return Arrays.binarySearch(a, 0, a.length, missKeys[index]);
-    }
-
-    @Benchmark
-    public int[] m03SearchAllMissScalar() {
-        int[] result = new int[missKeys.length];
+    public int[] m03SearchAll() {
+        int[] result = new int[fiftyFiftyKeys.length];
         for (int i = 0; i < result.length; i++) {
-            result[i] = Arrays.binarySearch(a, 0, a.length, missKeys[i]);
-        }
-        return result;
-    }
-
-    @Benchmark
-    public int[] m04SearchAllHitScalar() {
-        int[] result = new int[hitKeys.length];
-        for (int i = 0; i < result.length; i++) {
-            result[i] = Arrays.binarySearch(a, 0, a.length, hitKeys[i]);
+            result[i] = Arrays.binarySearch(a, 0, a.length, fiftyFiftyKeys[i]);
         }
         return result;
     }

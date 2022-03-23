@@ -9,6 +9,7 @@ import jdk.incubator.vector.IntVector;
 
 import java.util.Arrays;
 
+import static java.lang.Integer.numberOfLeadingZeros;
 import static jdk.incubator.vector.VectorOperators.GE;
 import static jdk.incubator.vector.VectorOperators.GT;
 import static jdk.incubator.vector.VectorOperators.IS_DEFAULT;
@@ -57,7 +58,7 @@ public class OffsetBinarySearch {
         }
 
         int index = fromIndex;
-        int iterations = 32 - Integer.numberOfLeadingZeros(size);
+        int iterations = 32 - numberOfLeadingZeros(size);
         for (int n = iterations; n > 0; n--) {
             int half = size >>> 1;
             int mid = index + half;
@@ -99,47 +100,43 @@ public class OffsetBinarySearch {
         }
 
         int offset = keysFromIndex;
-        int index0, index1, index2, index3;
         int half;
-        int mid0, mid1, mid2, mid3;
-        int key0, key1, key2, key3;
-        int sign0, sign1, sign2, sign3;
         int upperBound = fromIndex + ((toIndex - fromIndex) & -4);
-        int iterations = 32 - Integer.numberOfLeadingZeros(size);
+        int iterations = 32 - numberOfLeadingZeros(size);
         for (; offset < upperBound; offset += 4) {
-            index0 = fromIndex;
-            index1 = fromIndex;
-            index2 = fromIndex;
-            index3 = fromIndex;
-            key0 = keys[offset];
-            key1 = keys[offset + 1];
-            key2 = keys[offset + 2];
-            key3 = keys[offset + 3];
+            int index0 = fromIndex;
+            int index1 = fromIndex;
+            int index2 = fromIndex;
+            int index3 = fromIndex;
+            int key0 = keys[offset];
+            int key1 = keys[offset + 1];
+            int key2 = keys[offset + 2];
+            int key3 = keys[offset + 3];
             size = toIndex - fromIndex;
             for (int n = iterations; n > 0; n--) {
                 half = size >>> 1;
-                mid0 = index0 + half;
+                int mid0 = index0 + half;
                 if (key0 >= a[mid0]) {
                     index0 = mid0;
                 }
-                mid1 = index1 + half;
+                int mid1 = index1 + half;
                 if (key1 >= a[mid1]) {
                     index1 = mid1;
                 }
-                mid2 = index2 + half;
+                int mid2 = index2 + half;
                 if (key2 >= a[mid2]) {
                     index2 = mid2;
                 }
-                mid3 = index3 + half;
+                int mid3 = index3 + half;
                 if (key3 >= a[mid3]) {
                     index3 = mid3;
                 }
                 size -= half;
             }
-            sign0 = a[index0] - key0;
-            sign1 = a[index1] - key1;
-            sign2 = a[index2] - key2;
-            sign3 = a[index3] - key3;
+            int sign0 = a[index0] - key0;
+            int sign1 = a[index1] - key1;
+            int sign2 = a[index2] - key2;
+            int sign3 = a[index3] - key3;
             results[offset - fromIndex] = sign0 == 0 ? index0 : ~index0 + (sign0 >> -1);
             results[offset + 1 - fromIndex] = sign1 == 0 ? index1 : ~index1 + (sign1 >> -1);
             results[offset + 2 - fromIndex] = sign2 == 0 ? index2 : ~index2 + (sign2 >> -1);
@@ -179,7 +176,7 @@ public class OffsetBinarySearch {
             return;
         }
 
-        int iterations = 32 - Integer.numberOfLeadingZeros(size);
+        int iterations = 32 - numberOfLeadingZeros(size);
 
         final var SPECIES = IntVector.SPECIES_PREFERRED;
         int upperBound = SPECIES.loopBound(keysToIndex);
@@ -229,7 +226,7 @@ public class OffsetBinarySearch {
             return;
         }
 
-        int iterations = 32 - Integer.numberOfLeadingZeros(size);
+        int iterations = 32 - numberOfLeadingZeros(size);
 
         final var SPECIES = IntVector.SPECIES_PREFERRED;
         int[] indexArray = new int[SPECIES.length()];
