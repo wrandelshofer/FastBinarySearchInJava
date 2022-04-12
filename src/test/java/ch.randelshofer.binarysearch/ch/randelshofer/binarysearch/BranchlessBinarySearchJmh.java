@@ -60,7 +60,7 @@ import static ch.randelshofer.binarysearch.ArrayUtil.rndNoDuplicates;
 @Warmup(iterations = 2)
 @OutputTimeUnit(TimeUnit.NANOSECONDS)
 @BenchmarkMode(Mode.AverageTime)
-public class OffsetBinarySearchJmh {
+public class BranchlessBinarySearchJmh {
     private static final int[] a = rndNoDuplicates(1000, 1);
     private static final int[] hitKeys = rndHitKeys(a, 1000);
     private static final int[] missKeys = rndMissKeys(a, 1000, 1000);
@@ -74,14 +74,14 @@ public class OffsetBinarySearchJmh {
     @Benchmark
     public int m01Search() {
         index = (index + 1) % fiftyFiftyKeys.length;
-        return OffsetBinarySearch.binarySearch(a, 0, a.length, fiftyFiftyKeys[index]);
+        return BranchlessBinarySearch.binarySearch(a, 0, a.length, fiftyFiftyKeys[index]);
     }
 
     @Benchmark
     public int[] m03SearchAllScalar() {
         int[] result = new int[fiftyFiftyKeys.length];
         for (int i = 0; i < result.length; i++) {
-            result[i] = OffsetBinarySearch.binarySearch(a, 0, a.length, fiftyFiftyKeys[i]);
+            result[i] = BranchlessBinarySearch.binarySearch(a, 0, a.length, fiftyFiftyKeys[i]);
         }
         return result;
     }

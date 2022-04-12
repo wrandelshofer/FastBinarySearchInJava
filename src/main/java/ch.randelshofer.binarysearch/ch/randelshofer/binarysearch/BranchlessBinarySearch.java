@@ -31,7 +31,7 @@ import static jdk.incubator.vector.VectorOperators.LT;
  *     MIT License</dd>
  * </dl>
  */
-public class OffsetBinarySearch {
+public class BranchlessBinarySearch {
 
     /**
      * Searches for the provided key in the given array.

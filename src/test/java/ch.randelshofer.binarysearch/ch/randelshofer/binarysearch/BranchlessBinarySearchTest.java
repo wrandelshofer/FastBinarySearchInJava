@@ -19,7 +19,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.DynamicTest.dynamicTest;
 
-class OffsetBinarySearchTest {
+class BranchlessBinarySearchTest {
     @TestFactory
     public List<DynamicTest> testsWithDistinctValues() {
         return Arrays.asList(
@@ -85,7 +85,7 @@ class OffsetBinarySearchTest {
                 if (!distinct.add(key)) {
                     continue;
                 }
-                int actual = OffsetBinarySearch.binarySearch(a, fromIndex, toIndex, key);
+                int actual = BranchlessBinarySearch.binarySearch(a, fromIndex, toIndex, key);
                 int expected = Arrays.binarySearch(a, fromIndex, toIndex, key);
                 assertEquals(expected, actual, "key=" + key);
             }
@@ -96,9 +96,9 @@ class OffsetBinarySearchTest {
         int[] actual = new int[toIndex - fromIndex];
         int[] actual2 = new int[toIndex - fromIndex];
         int[] actual3 = new int[toIndex - fromIndex];
-        OffsetBinarySearch.binarySearchVectorized(a, fromIndex, toIndex, a, fromIndex, toIndex, actual);
-        OffsetBinarySearch.binarySearchVectorizedPredicate(a, fromIndex, toIndex, a, fromIndex, toIndex, actual2);
-        OffsetBinarySearch.binarySearchUnrolled(a, fromIndex, toIndex, a, fromIndex, toIndex, actual3);
+        BranchlessBinarySearch.binarySearchVectorized(a, fromIndex, toIndex, a, fromIndex, toIndex, actual);
+        BranchlessBinarySearch.binarySearchVectorizedPredicate(a, fromIndex, toIndex, a, fromIndex, toIndex, actual2);
+        BranchlessBinarySearch.binarySearchUnrolled(a, fromIndex, toIndex, a, fromIndex, toIndex, actual3);
         for (int i = fromIndex; i < toIndex; i++) {
             int expected = Arrays.binarySearch(a, fromIndex, toIndex, a[i]);
             assertEquals(expected, actual[i - fromIndex]);
@@ -120,7 +120,7 @@ class OffsetBinarySearchTest {
                     continue;
                 }
 
-                int actual = OffsetBinarySearch.binarySearch(a, fromIndex, toIndex, key);
+                int actual = BranchlessBinarySearch.binarySearch(a, fromIndex, toIndex, key);
                 int firstIndex = list.indexOf(key);
                 if (firstIndex >= 0) {
                     firstIndex += fromIndex;
